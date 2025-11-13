@@ -63,6 +63,30 @@ function ProductList({ token }) {
     alert('Product liked!');
   };
 
+  const handleAddToCart = async (e, productId) => {
+    e.stopPropagation();
+    try {
+      const response = await fetch('/api/cart/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ productId, quantity: 1 })
+      });
+      
+      if (response.ok) {
+        alert('Product added to cart!');
+      } else {
+        const error = await response.json();
+        alert(error.message || 'Failed to add to cart');
+      }
+    } catch (error) {
+      console.error('Failed to add to cart:', error);
+      alert('Failed to add to cart');
+    }
+  };
+
   return (
     <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
       <div style={{ marginBottom: '2rem' }}>
@@ -150,7 +174,8 @@ function ProductList({ token }) {
               <div style={{
                 display: 'flex',
                 justifyContent: 'space-between',
-                alignItems: 'center'
+                alignItems: 'center',
+                gap: '0.5rem'
               }}>
                 <span style={{
                   fontSize: '1.25rem',
@@ -159,19 +184,36 @@ function ProductList({ token }) {
                 }}>
                   ${product.price}
                 </span>
-                <button
-                  onClick={(e) => handleLike(e, product._id)}
-                  style={{
-                    padding: '0.5rem 1rem',
-                    backgroundColor: '#e74c3c',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer'
-                  }}
-                >
-                  ❤ Like
-                </button>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button
+                    onClick={(e) => handleAddToCart(e, product._id)}
+                    style={{
+                      padding: '0.5rem 0.75rem',
+                      backgroundColor: '#f39c12',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontSize: '0.9rem'
+                    }}
+                  >
+                    🛒
+                  </button>
+                  <button
+                    onClick={(e) => handleLike(e, product._id)}
+                    style={{
+                      padding: '0.5rem 0.75rem',
+                      backgroundColor: '#e74c3c',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontSize: '0.9rem'
+                    }}
+                  >
+                    ❤
+                  </button>
+                </div>
               </div>
               <div style={{ marginTop: '0.5rem' }}>
                 <span style={{
