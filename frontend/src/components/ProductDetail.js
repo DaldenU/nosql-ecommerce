@@ -22,15 +22,36 @@ function ProductDetail({ token }) {
 
   const handleInteraction = async (type) => {
     try {
-      await fetch(`/api/products/${id}/interact`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ type })
-      });
-      alert(`Product ${type}d successfully!`);
+      if (type === 'cart') {
+        // Add to cart via cart API
+        const response = await fetch('/api/cart/add', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ productId: id, quantity: 1 })
+        });
+        
+        if (response.ok) {
+          alert('Product added to cart!');
+          // Optionally redirect to cart or update cart count
+        } else {
+          const error = await response.json();
+          alert(error.message || 'Failed to add to cart');
+        }
+      } else {
+        // For like and purchase, use the existing interaction endpoint
+        await fetch(`/api/products/${id}/interact`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ type })
+        });
+        alert(`Product ${type}d successfully!`);
+      }
     } catch (error) {
       console.error('Failed to record interaction:', error);
     }

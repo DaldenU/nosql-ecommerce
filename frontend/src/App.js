@@ -5,18 +5,22 @@ import Register from './components/Register';
 import ProductList from './components/ProductList';
 import ProductDetail from './components/ProductDetail';
 import Recommendations from './components/Recommendations';
+import Cart from './components/Cart';
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [user, setUser] = useState(null);
+  const [cartCount, setCartCount] = useState(0);
 
   useEffect(() => {
     if (token) {
       localStorage.setItem('token', token);
       fetchUserProfile();
+      fetchCartCount();
     } else {
       localStorage.removeItem('token');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
   const fetchUserProfile = async () => {
@@ -33,9 +37,24 @@ function App() {
     }
   };
 
+  const fetchCartCount = async () => {
+    try {
+      const response = await fetch('/api/cart', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setCartCount(data.items.length);
+      }
+    } catch (error) {
+      console.error('Failed to fetch cart count:', error);
+    }
+  };
+
   const handleLogout = () => {
     setToken(null);
     setUser(null);
+    setCartCount(0);
   };
 
   return (
@@ -55,6 +74,30 @@ function App() {
               <a href="/" style={{ color: 'white', textDecoration: 'none' }}>Products</a>
               <a href="/recommendations" style={{ color: 'white', textDecoration: 'none' }}>
                 Recommendations
+              </a>
+              <a href="/cart" style={{ 
+                color: 'white', 
+                textDecoration: 'none',
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.25rem'
+              }}>
+                🛒 Cart
+                {cartCount > 0 && (
+                  <span style={{
+                    backgroundColor: '#e74c3c',
+                    color: 'white',
+                    borderRadius: '50%',
+                    padding: '0.15rem 0.5rem',
+                    fontSize: '0.8rem',
+                    fontWeight: 'bold',
+                    minWidth: '20px',
+                    textAlign: 'center'
+                  }}>
+                    {cartCount}
+                  </span>
+                )}
               </a>
               <span>Welcome, {user?.username}</span>
               <button
@@ -89,6 +132,9 @@ function App() {
           } />
           <Route path="/recommendations" element={
             token ? <Recommendations token={token} /> : <Navigate to="/login" />
+          } />
+          <Route path="/cart" element={
+            token ? <Cart token={token} /> : <Navigate to="/login" />
           } />
         </Routes>
       </div>
